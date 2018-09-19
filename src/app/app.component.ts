@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+// import 'rxjs/add/operator/take';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,8 @@ export class AppComponent implements OnInit {
   cuisinesRef: AngularFireList<any[]>;
   restaurants: Observable<any[]>;
   restaurantsRef: AngularFireList<any>;
+
+  exists;
 
   constructor (private db: AngularFireDatabase) {
   }
@@ -35,6 +38,15 @@ export class AppComponent implements OnInit {
         return restaurants;
       })
     );
+
+    this.exists = this.db.object('/restaurants/1/features/1').valueChanges();
+    this.exists.take(1).subscribe(x => {
+      if (x && x === true) {
+        console.log("EXIST");
+      } else {
+        console.log("NOT EXIST");
+      }
+    })
   }
 
   // add () {
