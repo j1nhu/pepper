@@ -22,3 +22,10 @@
 </div>
 
 
+<h3>Hello {{ displayName }}</h3>
+<img *ngIf="photoURL" src="{{ photoURL }}">
+<div style="padding-top: 2rem;">
+    <button (click)="login()">Login</button>
+    <button (click)="logout()">Logout</button>
+</div>
+

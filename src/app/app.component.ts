@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { auth } from 'firebase';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 // import 'rxjs/add/operator/take';
@@ -18,7 +20,11 @@ export class AppComponent implements OnInit {
 
   exists;
 
-  constructor (private db: AngularFireDatabase) {
+  displayName;
+  photoURL;
+
+
+  constructor (private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
   }
 
   ngOnInit () {
@@ -47,6 +53,19 @@ export class AppComponent implements OnInit {
           console.log("NOT EXIST");
         }
       });
+
+    this.afAuth.authState.subscribe(authState => {
+      if (!authState) {
+        console.log('NOT LOGGED IN');
+        this.displayName = null;
+        this.photoURL = null;
+        return;
+      }
+
+      this.displayName = authState.displayName;
+      this.photoURL = authState.photoURL;
+      console.log('LOGGED IN', this.displayName, this.photoURL);
+    });
   }
 
   addRestaurant () {
@@ -60,6 +79,16 @@ export class AppComponent implements OnInit {
       update['restaurant-by-city/camberwell/'+ x.key] = restaurant;
       this.db.object('/').update(update);
     });
+  }
+
+  login() {
+    this.afAuth.auth.signInWithPopup(new auth.FacebookAuthProvider()).then(authState => {
+      console.log('AFTER LOGIN', authState);
+    });
+  }
+
+  logout() {
+    this.afAuth.auth.signOut();
   }
 
   //
