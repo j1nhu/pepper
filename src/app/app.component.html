@@ -1,6 +1,6 @@
 <h1>Cuisines</h1>
 <ul>
-  <li *ngFor="let c of cuisines | async">{{ c }}</li>
+  <li *ngFor="let c of cuisines | async | keyvalue">{{ c.key }} - {{ c.value }}</li>
 </ul>
 
 <h1>Restaurants</h1>

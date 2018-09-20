@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 // import 'rxjs/add/operator/take';
 
 @Component({
@@ -22,10 +22,10 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit () {
-    this.cuisinesRef = this.db.list('/cuisines');
+    this.cuisinesRef = this.db.list('/cuisines', ref => ref.orderByKey());
     this.cuisines = this.cuisinesRef.valueChanges();
 
-    this.restaurantsRef = this.db.list('/restaurants');
+    this.restaurantsRef = this.db.list('/restaurants', ref => ref.orderByChild('rating').equalTo(5).limitToLast(1));
     this.restaurants = this.restaurantsRef.valueChanges().pipe(
       map(restaurants => {
         restaurants.map(restaurant => {
@@ -40,13 +40,13 @@ export class AppComponent implements OnInit {
     );
 
     this.exists = this.db.object('/restaurants/1/features/1').valueChanges();
-    this.exists.take(1).subscribe(x => {
-      if (x && x === true) {
-        console.log("EXIST");
-      } else {
-        console.log("NOT EXIST");
-      }
-    })
+    this.exists.pipe(take(1)).subscribe(x => {
+        if (x && x === true) {
+          console.log("EXIST");
+        } else {
+          console.log("NOT EXIST");
+        }
+      });
   }
 
   // add () {
