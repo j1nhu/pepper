@@ -49,14 +49,19 @@ export class AppComponent implements OnInit {
       });
   }
 
-  // add () {
-  //   this.cuisinesRef.push({
-  //     name: 'Asian',
-  //     details: {
-  //       description: 'bla'
-  //     }
-  //   });
-  // }
+  addRestaurant () {
+    this.restaurantsRef.push({
+      name: ''
+    }).then(x => {
+      // x.key
+      let restaurant =  { name: 'My new restaurant'};
+      let update = {};
+      update['restaurants/'+ x.key] = restaurant;
+      update['restaurant-by-city/camberwell/'+ x.key] = restaurant;
+      this.db.object('/').update(update);
+    });
+  }
+
   //
   // update () {
   //   this.afDb.object('/favourites/1/').set(null);
