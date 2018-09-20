@@ -3,7 +3,11 @@ import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase';
 import { Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators'
+import { Http } from '@angular/http';
+import {sendRequest} from 'selenium-webdriver/http';
+import {error} from 'util';
+
 // import 'rxjs/add/operator/take';
 
 @Component({
@@ -22,9 +26,10 @@ export class AppComponent implements OnInit {
 
   displayName;
   photoURL;
+  error;
 
 
-  constructor (private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
+  constructor (private db: AngularFireDatabase, private afAuth: AngularFireAuth, private http: Http) {
   }
 
   ngOnInit () {
@@ -62,9 +67,19 @@ export class AppComponent implements OnInit {
         return;
       }
 
+      let uid = authState.providerData[0].uid;
+      let userRef = this.db.object('users/'+ authState.uid);
+      userRef.valueChanges().subscribe(user => {
+        let url = `https://graph.facebook.com/v3.1/${uid}?field=id,name&access_token=${user.accessToken}`;
+        this.http.get(url).subscribe(response => {
+          let user = response.json();
+          userRef.update(user);
+        });
+      });
+
       this.displayName = authState.displayName;
       this.photoURL = authState.photoURL;
-      console.log('LOGGED IN', this.displayName, this.photoURL);
+      console.log('LOGGED IN', authState);
     });
   }
 
@@ -81,14 +96,39 @@ export class AppComponent implements OnInit {
     });
   }
 
-  login() {
+  loginWithFacebook() {
     this.afAuth.auth.signInWithPopup(new auth.FacebookAuthProvider()).then(authState => {
       console.log('AFTER LOGIN', authState);
+      this.db.object('users/' + authState.user.uid).update({
+        accessToken: authState.credential.accessToken
+      })
+    });
+  }
+
+  login(email, password) {
+    this.afAuth.auth.signInWithEmailAndPassword(email, password).then(authState => {
+      console.log('Sign in', authState);
+    }).catch(error => {
+      console.log('sign in error', error);
+      this.error = error;
     });
   }
 
   logout() {
     this.afAuth.auth.signOut();
+  }
+
+  register(email, password) {
+    this.afAuth.auth.createUserWithEmailAndPassword(email, password).then(authState => {
+      console.log(authState);
+      authState.user.sendEmailVerification(email).then(sendRequest => {
+        console.log('Send email', sendRequest);
+      }).catch(error => {
+        console.log('Send email error', error);
+      });
+    }).catch(error => {
+      console.log('Register', error);
+    });
   }
 
   //

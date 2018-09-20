@@ -27,5 +27,7 @@
 <div style="padding-top: 2rem;">
     <button (click)="login()">Login</button>
     <button (click)="logout()">Logout</button>
+    <button (click)="register()">Register</button>
 </div>
+<div *ngIf="error">{{ error }}</div>
 
